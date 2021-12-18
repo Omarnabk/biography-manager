@@ -1,0 +1,5 @@
+uvicorn
+fastapi
+werkzeug
+uvicorn[standard]
+python-multipart
