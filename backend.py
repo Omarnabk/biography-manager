@@ -98,7 +98,7 @@ class UserBiographySystem:
             return form_response(data={},
                                  error_msg='email was not found in the pending profiles; maybe already accepted.')
 
-        photo_folder_path = os.path.join(USER_DATA_FILES, biography_id, 'profile_photo')
+        photo_folder_path = os.path.join(bio_save_path, biography_id, 'profile_photo')
         personal_photo_name = self.save_user_profile_photo(photo_folder_path, user_photo, file_flags)
 
         affected_rows_b = sqlite_insert(conn=conn, table='biography_validated', replace_existing=True, rows={
@@ -182,7 +182,7 @@ class UserBiographySystem:
         else:
             biography_id = generate_id(user_bio['Email'].lower())
 
-        photo_folder_path = os.path.join(USER_DATA_FILES, biography_id, 'profile_photo')
+        photo_folder_path = os.path.join(bio_save_path, biography_id, 'profile_photo')
         personal_photo_name = self.save_user_profile_photo(photo_folder_path, user_photo, file_flags)
 
         affected_rows_b = sqlite_insert(conn=conn, table='biography_pending', replace_existing=True, rows={
@@ -229,7 +229,7 @@ class UserBiographySystem:
     def retrieve_bios_by_event(self, event_id, biography_status):
         def get_photo_path(photo_name, biography_id):
             if photo_name:
-                return os.path.join(USER_DATA_FILES, biography_id, 'profile_photo', photo_name)
+                return os.path.join(bio_save_path, biography_id, 'profile_photo', photo_name)
             return ''
 
         conn = self.get_db()
