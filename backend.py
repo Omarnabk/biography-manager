@@ -4,7 +4,7 @@ import sqlite3
 
 from werkzeug.utils import secure_filename
 
-from config import bio_save_path, invitation_link_base, profile_photo_url_root
+from config import bio_save_path, invitation_link_base, profile_photo_url_base, profile_url_base
 from utils import *
 
 biography_cols = ["BiographyID",
@@ -37,7 +37,7 @@ class UserBiographySystem:
     @staticmethod
     def get_photo_path(photo_name, biography_id):
         if photo_name:
-            return os.path.join(profile_photo_url_root, biography_id, 'profile_photo', photo_name)
+            return os.path.join(profile_photo_url_base, biography_id, 'profile_photo', photo_name)
         return ''
 
     def get_db(self):
@@ -89,6 +89,7 @@ class UserBiographySystem:
             biography['Keywords'] = str2list(biography['Keywords'])
             biography['PersonalPhotoName'] = self.get_photo_path(biography_id=biography.get('BiographyID'),
                                                                  photo_name=biography.get('PersonalPhotoName'))
+            biography['ProfileULR'] = os.path.join(profile_url_base, biography.get('BiographyID'))
             return form_response(data=biography, success_msg='success')
         else:
             return form_response(data={}, success_msg='success')
@@ -102,6 +103,7 @@ class UserBiographySystem:
         if biography:
             biography = biography[0]
             biography['Keywords'] = str2list(biography['Keywords'])
+            biography['ProfileULR'] = os.path.join(profile_url_base, biography.get('BiographyID'))
             biography['PersonalPhotoName'] = self.get_photo_path(biography_id=biography.get('BiographyID'),
                                                                  photo_name=biography.get('PersonalPhotoName'))
             return form_response(data=biography, success_msg='success')
@@ -284,10 +286,11 @@ class UserBiographySystem:
 
         result = conn.cursor().execute(sql, {'EventID': event_id})
         biographies = get_list_of_dict(keys=biography_cols, list_of_tuples=result)
-        for b in biographies:
-            b['PersonalPhotoName'] = self.get_photo_path(biography_id=b.get('BiographyID'),
-                                                         photo_name=b.get('PersonalPhotoName'))
-            b['Keywords'] = str2list(b['Keywords'])
+        for biography in biographies:
+            biography['PersonalPhotoName'] = self.get_photo_path(biography_id=biography.get('BiographyID'),
+                                                                 photo_name=biography.get('PersonalPhotoName'))
+            biography['Keywords'] = str2list(biography['Keywords'])
+            biography['ProfileULR'] = os.path.join(profile_url_base, biography.get('BiographyID'))
         return form_response(data=biographies, success_msg='success')
 
     def get_itu_keywords(self, query, top_x=10):
