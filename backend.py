@@ -97,7 +97,7 @@ class UserBiographySystem:
 
         conn = self.get_db()
         bio_id = bio_id.lower()
-        biography = sqlite_select(conn=conn, table='biography_pending', cols=biography_cols,
+        biography = sqlite_select(conn=conn, table='biography_validated', cols=biography_cols,
                                   conds={'BiographyID': bio_id})
         if biography:
             biography = biography[0]
