@@ -272,39 +272,30 @@ class UserBiographySystem:
         result = [x[0] for x in result]
         return result
 
-    def append_bios_to_event(self, event_id, bio_emails):
+    def append_bio_to_event(self, event_id, bio_email):
         conn = self.get_db()
         already_exists_event = sqlite_select(conn=conn, table='events', cols=['EventID'], conds={'EventID': event_id})
         if not already_exists_event:
             return form_response(data={}, error_msg="invalid event ID")
 
-        pending_validation, inserted_emails, missing_bio = [], [], []
-        for bio_email in bio_emails:
-            bio_email = bio_email.lower()
-            already_exists_user_v = sqlite_select(conn,
-                                                  table='biography_validated',
-                                                  cols=['BiographyID'],
-                                                  conds={'Email': f'{bio_email}'})
-            already_exists_user_p = sqlite_select(conn,
-                                                  table='biography_pending',
-                                                  cols=['BiographyID'],
-                                                  conds={'Email': f'{bio_email}'})
-            if already_exists_user_v:
-                biography_id = already_exists_user_v[0].get('BiographyID')
-                sqlite_insert(conn=conn, table='event_biography', rows={
-                    'EventID': event_id,
-                    'BiographyID': biography_id
-                }, replace_existing=True)
-                inserted_emails.append(bio_email)
+        bio_email = bio_email.lower()
+        already_exists_user_v = sqlite_select(conn,
+                                              table='biography_validated',
+                                              cols=['BiographyID'],
+                                              conds={'Email': f'{bio_email}'})
+        already_exists_user_p = sqlite_select(conn,
+                                              table='biography_pending',
+                                              cols=['BiographyID'],
+                                              conds={'Email': f'{bio_email}'})
+        if already_exists_user_v:
+            biography_id = already_exists_user_v[0].get('BiographyID')
+            sqlite_insert(conn=conn, table='event_biography', rows={
+                'EventID': event_id,
+                'BiographyID': biography_id
+            }, replace_existing=True)
+            return form_response(data={'status:': "1", "message": "Added"}, success_msg="success")
 
-            elif already_exists_user_p:
-                pending_validation.append(bio_email)
-            else:
-                missing_bio.append(bio_email)
-
-        return form_response(data={
-            'linked_bios': inserted_emails,
-            'pending_validation': pending_validation,
-            'missing_bio': missing_bio},
-            success_msg='success; if you have items in the pending_validation it means these emails are not validated yet. '
-                        'Missing bio means that we do not have the bio in the database. You have to request it.')
+        elif already_exists_user_p:
+            return form_response(data={'status:': "0", "message": "Pending"}, success_msg="success")
+        else:
+            return form_response(data={'status:': "-1", "message": "unavailable"}, success_msg="success")

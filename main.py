@@ -14,7 +14,7 @@ async def generate_invitation(even_name):
     return biography.generate_invitation_link(event_name=even_name)
 
 
-@app.get("/biography/retrieve_biography")
+@app.get("/biography/retrieve_bio")
 async def retrieve_biography(user_email: str):
     return biography.retrieve_biography(user_email=user_email)
 
@@ -29,12 +29,12 @@ async def retrieve_bios_by_event(event_id: str, biography_status: str):
     return biography.retrieve_bios_by_event(event_id, biography_status)
 
 
-@app.post('/biography/append_bios_to_event')
-async def append_bios_to_event(request: Request):
+@app.post('/biography/append_bio_to_event')
+async def append_bio_to_event(request: Request):
     form_data = await request.form()
     event_id = form_data['event_id']
-    bio_emails = form_data['bio_emails']
-    return biography.append_bios_to_event(event_id, json.loads(bio_emails).get('emails', []))
+    bio_email = form_data['bio_email']
+    return biography.append_bio_to_event(event_id, bio_email)
 
 
 @app.post("/biography/save_bio")
@@ -107,4 +107,4 @@ async def query_itu_keywords(q):
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8971, log_level="info")
+    uvicorn.run("main:app", host="0.0.0.0", port=8971, log_level="info")
