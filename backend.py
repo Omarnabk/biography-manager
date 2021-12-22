@@ -69,7 +69,7 @@ class UserBiographySystem:
             error_msg = f'Error generating the service link. Error {ex}'
             return form_response(data=None, error_msg=error_msg)
 
-    def retrieve_biography(self, user_email):
+    def retrieve_bio_by_email(self, user_email):
 
         conn = self.get_db()
         user_email = user_email.lower()
@@ -84,6 +84,21 @@ class UserBiographySystem:
 
         biography = sqlite_select(conn=conn, table='biography_validated', cols=biography_cols,
                                   conds={'Email': user_email})
+        if biography:
+            biography = biography[0]
+            biography['Keywords'] = str2list(biography['Keywords'])
+            biography['PersonalPhotoName'] = self.get_photo_path(biography_id=biography.get('BiographyID'),
+                                                                 photo_name=biography.get('PersonalPhotoName'))
+            return form_response(data=biography, success_msg='success')
+        else:
+            return form_response(data={}, success_msg='success')
+
+    def retrieve_bio_by_id(self, bio_id):
+
+        conn = self.get_db()
+        bio_id = bio_id.lower()
+        biography = sqlite_select(conn=conn, table='biography_pending', cols=biography_cols,
+                                  conds={'BiographyID': bio_id})
         if biography:
             biography = biography[0]
             biography['Keywords'] = str2list(biography['Keywords'])

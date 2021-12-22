@@ -14,9 +14,14 @@ async def generate_invitation(even_name):
     return biography.generate_invitation_link(event_name=even_name)
 
 
-@app.get("/biography/retrieve_bio")
-async def retrieve_biography(user_email: str):
-    return biography.retrieve_biography(user_email=user_email)
+@app.get("/biography/retrieve_bio_by_email")
+async def retrieve_bio_by_email(user_email: str):
+    return biography.retrieve_bio_by_email(user_email=user_email)
+
+
+@app.get("/biography/retrieve_bio_by_id")
+async def retrieve_bio_by_id(bio_id: str):
+    return biography.retrieve_bio_by_id(bio_id=bio_id)
 
 
 @app.get('/biography/get_events')
