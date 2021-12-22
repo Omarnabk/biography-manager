@@ -100,5 +100,11 @@ async def accept_bio(request: Request):
     return response
 
 
+@app.get('/biography/keywords')
+async def query_itu_keywords(q):
+    response = biography.get_itu_keywords(q)
+    return response
+
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8971, log_level="info")

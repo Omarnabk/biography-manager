@@ -259,6 +259,19 @@ class UserBiographySystem:
             b['Keywords'] = str2list(b['Keywords'])
         return form_response(data=biographies, success_msg='success')
 
+    def get_itu_keywords(self, query, top_x=10):
+
+        sql = f"""
+                SELECT KwText FROM itu_keywords
+                WHERE lower(KwText) like ? LIMIT ? 
+                """
+        conn = self.get_db()
+        cur = conn.cursor()
+        cur.execute(sql, ("%" + query.lower() + "%", top_x))
+        result = cur.fetchall()
+        result = [x[0] for x in result]
+        return result
+
     def append_bios_to_event(self, event_id, bio_emails):
         conn = self.get_db()
         already_exists_event = sqlite_select(conn=conn, table='events', cols=['EventID'], conds={'EventID': event_id})
