@@ -7,8 +7,7 @@ from werkzeug.utils import secure_filename
 from config import bio_save_path, invitation_link_base
 from utils import *
 
-if os.path.exists(bio_save_path):
-    USER_DATA_FILES = os.path.join(bio_save_path)
+os.makedirs(bio_save_path, exist_ok=True)
 
 biography_cols = ["BiographyID",
                   "FirstName",
