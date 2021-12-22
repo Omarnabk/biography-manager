@@ -93,22 +93,27 @@ class UserBiographySystem:
         else:
             return form_response(data={}, success_msg='success')
 
-    def accept_biography(self, user_bio, user_photo, file_flags):
+    def accept_biography(self, user_bio, user_photo, photo_flag):
         conn = self.get_db()
         user_email = user_bio.get('Email', '').lower()
+
         already_exists_user = sqlite_select(conn,
                                             table='biography_pending',
-                                            cols=['BiographyID'],
+                                            cols=['BiographyID', 'PersonalPhotoName'],
                                             conds={'Email': f'{user_email}'})
         if already_exists_user:
             biography_id = already_exists_user[0].get('BiographyID')
+            personal_photo_name = already_exists_user[0].get('PersonalPhotoName')
         else:
             return form_response(data={},
-                                 error_msg='email was not found in the pending profiles; maybe already accepted.')
+                                 error_msg='email was not found in the pending profiles; '
+                                           'maybe already accepted or you inserted an invalid email.')
 
         photo_folder_path = os.path.join(bio_save_path, biography_id, 'profile_photo')
         os.makedirs(photo_folder_path, exist_ok=True)
-        personal_photo_name = self.save_user_profile_photo(photo_folder_path, user_photo, file_flags)
+        personal_photo_name = self.save_user_profile_photo(photo_folder_path, user_photo,
+                                                           photo_flag,
+                                                           personal_photo_name)
 
         affected_rows_b = sqlite_insert(conn=conn, table='biography_validated', replace_existing=True, rows={
             "FirstName": user_bio.get('FirstName'),
@@ -138,20 +143,21 @@ class UserBiographySystem:
             return form_response(data={}, success_msg='success; inserted')
 
     @staticmethod
-    def save_user_profile_photo(image_save_dir, user_photo, file_flags):
+    def save_user_profile_photo(image_save_dir, user_photo, photo_flag, personal_photo_name):
 
         if user_photo is None:
             # if the photo_file is None --> the server did not send a file --> check what to do next based on the flag
             # if the flag is True --> delete the file
-            if bool(file_flags.get('ProfilePhotoFlag', 'False')):
+            if photo_flag:
                 if os.path.exists(image_save_dir):
                     try:
                         shutil.rmtree(image_save_dir)
-                    except OSError as e:
-                        print("Error: %s - %s." % (e.filename, e.strerror))
+                        return ''
+                    except:
+                        return ''
             else:
                 # if the flag is False --> keep/ no change
-                pass
+                return personal_photo_name
         else:
             try:
                 if not allowed_photo_file(user_photo['filename']):
@@ -168,15 +174,14 @@ class UserBiographySystem:
                 # example of how you can save the file
                 with open(f"{filepath}", "wb") as f:
                     f.write(user_photo['contents'])
+                    return personal_photo_name
             except:
                 return ''
-            return personal_photo_name
 
-    def save_biography(self, user_bio, user_photo, event_data, file_flags):
+    def save_biography(self, user_bio, user_photo, event_id, photo_flag):
         conn = self.get_db()
 
         user_email = user_bio['Email'].lower()
-        event_id = event_data.get('EventID')
 
         already_exists_event = sqlite_select(conn=conn, table='events', cols=['EventID'], conds={'EventID': event_id})
         if not already_exists_event:
@@ -184,16 +189,22 @@ class UserBiographySystem:
 
         already_exists_user = sqlite_select(conn,
                                             table='biography_pending',
-                                            cols=['BiographyID'],
+                                            cols=['BiographyID', 'PersonalPhotoName'],
                                             conds={'Email': f'{user_email}'})
         if already_exists_user:
             biography_id = already_exists_user[0].get('BiographyID')
+            personal_photo_name = already_exists_user[0].get('PersonalPhotoName')
+
         else:
             biography_id = generate_id(user_bio['Email'].lower())
+            personal_photo_name = ''
 
         photo_folder_path = os.path.join(bio_save_path, biography_id, 'profile_photo')
         os.makedirs(photo_folder_path, exist_ok=True)
-        personal_photo_name = self.save_user_profile_photo(photo_folder_path, user_photo, file_flags)
+        personal_photo_name = self.save_user_profile_photo(photo_folder_path,
+                                                           user_photo,
+                                                           photo_flag,
+                                                           personal_photo_name)
 
         affected_rows_b = sqlite_insert(conn=conn, table='biography_pending', replace_existing=True, rows={
             "FirstName": user_bio.get('FirstName'),

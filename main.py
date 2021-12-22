@@ -56,19 +56,19 @@ async def save_bio(request: Request):
     else:
         user_photo = None
 
-    if 'event_data' in form_data:
-        event_data = json.loads(form_data['event_data'])
+    if 'event_id' in form_data:
+        event_id = form_data['event_id']
     else:
-        event_data = None
+        event_id = None
 
-    if 'file_flags' in form_data:
-        file_flags = json.loads(form_data['file_flags'])
+    if 'photo_flag' in form_data:
+        photo_flag = eval(form_data['photo_flag'])
     else:
-        file_flags = {}
+        photo_flag = False
 
     response = biography.save_biography(user_data, user_photo,
-                                        event_data,
-                                        file_flags)
+                                        event_id,
+                                        photo_flag)
     return response
 
 
@@ -91,12 +91,12 @@ async def accept_bio(request: Request):
     else:
         user_photo = None
 
-    if 'file_flags' in form_data:
-        file_flags = json.loads(form_data['file_flags'])
+    if 'photo_flag' in form_data:
+        photo_flag = eval(form_data['photo_flag'])
     else:
-        file_flags = {}
+        photo_flag = False
 
-    response = biography.accept_biography(user_data, user_photo, file_flags)
+    response = biography.accept_biography(user_data, user_photo, photo_flag)
     return response
 
 
