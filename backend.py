@@ -34,6 +34,12 @@ class UserBiographySystem:
     def __init__(self, database_path):
         self.database_path = database_path
 
+    @staticmethod
+    def get_photo_path(photo_name, biography_id):
+        if photo_name:
+            return os.path.join(profile_photo_url_root, biography_id, 'profile_photo', photo_name)
+        return ''
+
     def get_db(self):
         return sqlite3.connect(self.database_path)
 
@@ -72,6 +78,8 @@ class UserBiographySystem:
         if biography:
             biography = biography[0]
             biography['Keywords'] = str2list(biography['Keywords'])
+            biography['PersonalPhotoName'] = self.get_photo_path(biography_id=biography.get('BiographyID'),
+                                                                 photo_name=biography.get('PersonalPhotoName'))
             return form_response(data=biography, success_msg='success')
 
         biography = sqlite_select(conn=conn, table='biography_validated', cols=biography_cols,
@@ -79,6 +87,8 @@ class UserBiographySystem:
         if biography:
             biography = biography[0]
             biography['Keywords'] = str2list(biography['Keywords'])
+            biography['PersonalPhotoName'] = self.get_photo_path(biography_id=biography.get('BiographyID'),
+                                                                 photo_name=biography.get('PersonalPhotoName'))
             return form_response(data=biography, success_msg='success')
         else:
             return form_response(data={}, success_msg='success')
@@ -227,10 +237,6 @@ class UserBiographySystem:
         return form_response(data=events, success_msg='success')
 
     def retrieve_bios_by_event(self, event_id, biography_status):
-        def get_photo_path(photo_name, biography_id):
-            if photo_name:
-                return os.path.join(profile_photo_url_root, biography_id, 'profile_photo', photo_name)
-            return ''
 
         conn = self.get_db()
 
@@ -253,8 +259,8 @@ class UserBiographySystem:
         result = conn.cursor().execute(sql, {'EventID': event_id})
         biographies = get_list_of_dict(keys=biography_cols, list_of_tuples=result)
         for b in biographies:
-            b['PersonalPhotoName'] = get_photo_path(biography_id=b.get('BiographyID'),
-                                                    photo_name=b.get('PersonalPhotoName'))
+            b['PersonalPhotoName'] = self.get_photo_path(biography_id=b.get('BiographyID'),
+                                                         photo_name=b.get('PersonalPhotoName'))
             b['Keywords'] = str2list(b['Keywords'])
         return form_response(data=biographies, success_msg='success')
 
