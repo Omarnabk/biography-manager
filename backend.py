@@ -327,9 +327,9 @@ class UserBiographySystem:
                 'EventID': event_id,
                 'BiographyID': biography_id
             }, replace_existing=True)
-            return form_response(data={'status:': "1", "message": "Added"}, success_msg="success")
+            return form_response(data={'status': "1", "message": "Added"}, success_msg="success")
 
         elif already_exists_user_p:
-            return form_response(data={'status:': "0", "message": "Pending"}, success_msg="success")
+            return form_response(data={'status': "0", "message": "Pending"}, success_msg="success")
         else:
-            return form_response(data={'status:': "-1", "message": "unavailable"}, success_msg="success")
+            return form_response(data={'status': "-1", "message": "unavailable"}, success_msg="success")
