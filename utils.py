@@ -61,7 +61,14 @@ def sqlite_update(conn, table, rows, conds):
 
 
 def sqlite_delete(conn, table, conds):
-    where_cond = ', '.join(f'LOWER({cond})=LOWER(:{cond})' for cond in conds.keys())
+    if conds:
+        if len(conds) > 1:
+            where_cond = ' AND '.join(f'LOWER({cond})=LOWER(:{cond})' for cond in conds.keys())
+        else:
+            where_cond = ' '.join(f'LOWER({cond})=LOWER(:{cond})' for cond in conds.keys())
+    else:
+        where_cond = ' 1=1 '
+
     sql = f'DELETE FROM {table} WHERE {where_cond}'
     affected_rows = conn.cursor().execute(sql, conds)
     conn.commit()

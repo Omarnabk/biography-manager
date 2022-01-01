@@ -306,6 +306,25 @@ class UserBiographySystem:
         result = [x[0] for x in result]
         return result
 
+    def remove_bio_from_event(self, event_id, bio_email):
+        conn = self.get_db()
+        already_exists_event = sqlite_select(conn=conn, table='events', cols=['EventID'], conds={'EventID': event_id})
+        if not already_exists_event:
+            return form_response(data={}, error_msg="invalid event ID")
+
+        bio_email = bio_email.lower()
+        already_exists_user_v = sqlite_select(conn,
+                                              table='biography_validated',
+                                              cols=['BiographyID'],
+                                              conds={'Email': f'{bio_email}'})
+        if already_exists_user_v:
+            biography_id = already_exists_user_v[0].get('BiographyID')
+            sqlite_delete(conn=conn, table='event_biography', conds={'EventID': f'{event_id}',
+                                                                     'BiographyID': f'{biography_id}',
+                                                                     })
+            return form_response(data={}, success_msg="success; removed")
+        return form_response(data={}, success_msg="success; not found")
+
     def append_bio_to_event(self, event_id, bio_email):
         conn = self.get_db()
         already_exists_event = sqlite_select(conn=conn, table='events', cols=['EventID'], conds={'EventID': event_id})

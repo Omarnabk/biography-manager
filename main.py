@@ -42,6 +42,14 @@ async def append_bio_to_event(request: Request):
     return biography.append_bio_to_event(event_id, bio_email)
 
 
+@app.post('/biography/remove_bio_from_event')
+async def remove_bio_from_event(request: Request):
+    form_data = await request.form()
+    event_id = form_data['event_id']
+    bio_email = form_data['bio_email']
+    return biography.remove_bio_from_event(event_id, bio_email)
+
+
 @app.post("/biography/save_bio")
 async def save_bio(request: Request):
     form_data = await request.form()
