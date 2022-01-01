@@ -323,10 +323,16 @@ class UserBiographySystem:
                                               conds={'Email': f'{bio_email}'})
         if already_exists_user_v:
             biography_id = already_exists_user_v[0].get('BiographyID')
-            sqlite_insert(conn=conn, table='event_biography', rows={
-                'EventID': event_id,
-                'BiographyID': biography_id
-            }, replace_existing=True)
+            # check if relation already exists:
+            exists_relation = sqlite_select(conn=conn, table='event_biography', cols=['EventID', 'BiographyID'],
+                                            conds={'EventID': f'{event_id}',
+                                                   'BiographyID': f'{biography_id}',
+                                                   })
+            if not exists_relation:
+                sqlite_insert(conn=conn, table='event_biography', rows={
+                    'EventID': event_id,
+                    'BiographyID': biography_id
+                }, replace_existing=True)
             return form_response(data={'status': "1", "message": "Added"}, success_msg="success")
 
         elif already_exists_user_p:
